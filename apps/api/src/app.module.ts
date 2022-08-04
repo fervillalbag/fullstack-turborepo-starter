@@ -1,17 +1,27 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core';
+import { GraphQLDateTime } from 'graphql-iso-date';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { validationSchemaForEnv } from './config/environment-variables';
-import { PersistenceModule } from './persistence/persistence.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      validationSchema: validationSchemaForEnv,
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      playground: false,
+      typePaths: ['./**/*.graphql'],
+      plugins: [ApolloServerPluginLandingPageLocalDefault()],
+      driver: ApolloDriver,
+      resolvers: { DateTime: GraphQLDateTime },
+      subscriptions: {
+        'graphql-ws': true,
+        'subscriptions-transport-ws': true,
+      },
     }),
-    PersistenceModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
